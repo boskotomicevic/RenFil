@@ -1,98 +1,64 @@
-//C:\Program Files (x86)\Microsoft Visual S
-//tudio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include
 #include<stdio.h>
-#include<stdlib.h>
 #include<string.h>
 #include<dirent.h>
-#include<sys/types.h>
-#define MAX_LEN 300
+#define PATH "../test/"
 
-void menu(FILE *fptr,int cNumOp, char *filename){ // ascii menu 
-   int i = 0;
-   char read_string[MAX_LEN];
-   while(fgets(read_string,sizeof(read_string),fptr) != NULL)
-        printf("%s",read_string);
-    if((fptr = fopen(filename,"r")) == NULL){
-        fprintf(stderr,"error opening %s\n",filename);
+int endsWith(char *str, char *suffix) {
+    if (!str || !suffix) return 0;
+    int lenstr = strlen(str);
+    int lensuffix = strlen(suffix);
+    if (lensuffix >  lenstr) return 0;
+    return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+void renameFiles(DIR* dir, char name[255], char extension[255]) {
+    struct dirent *entry;
+    int i = 1;
+    while ((entry = readdir(dir)) != NULL) {
+        if (!endsWith(entry->d_name, extension)) continue;
+        char oldName[255];
+        strcpy(oldName, PATH);
+        strcat(oldName, entry->d_name);
+        char newName[255] = "";
+        char number[10];
+        snprintf(number, 10, "%d", i);
+        strcpy(newName, PATH);
+        strcat(newName, name);
+        strcat(newName, number);
+        strcat(newName, extension);
+        printf("Renaming %s to %s\n", entry->d_name, newName);
+        rename(oldName, newName);
+        i++;
+    }
+}
+
+void fileNames(DIR* dir) {
+    struct dirent *entry;
+    while((entry = readdir(dir)) != NULL){
+        printf("%s\n", entry->d_name);
+    }
+}
+
+int main(){
+    char directoryName[255] = "../";
+    puts("Upisi ime foldera:");
+    gets(directoryName+3);
+    DIR* dir;
+    if ((dir = opendir(directoryName)) == NULL) {
+        printf("Folder '%s' ne postoji\n", directoryName);
         return 1;
     }
-   for(i=0;i<10;i++)
-      printf("\n");
-   printf("Select option ~~~:>    ");
-   scanf("%d",&cNumOp);
-   fclose(fptr);
-}
-
-void extSelect(char extype[],char cext[],int  cNumEx){
-    int i;
-    printf("Choose extension type: ");
-    
-    for(i = 0; i < sizeof(extype)/sizeof(extype[0]); i++)
-        printf("%s\n",extype[i]);
-    for(i=0;i<10;i++)
-      printf("\n");
-
-    printf("~~:>");
-    scanf("%d", &cNumEx);
-
-    switch (cNumEx){
-    case 1:
-         strcpy(cext, extype[0]);
-        puts(cext);
-        break;
-    case 2:
-        strcpy(cext, extype[1]);
-        puts(cext);
-        break;
-    
+    char extension[255] = "";
+    puts("Upisi ime extenzije:");
+    gets(extension);
+    if (extension[0] != '.') {
+        printf("Extenzija mora poceti tackom\n");
+        return 1;
     }
-}
-//2. upis putanje fajla
-void folderSelect(char folderPath, char cext, char *p, DIR* dir, struct dirent *entry){
-    printf("** \\ for PATH **");
-    printf("Enter path of folder: \n");
-    printf("~~:> ");
-    gets(folderPath);
-    dir = opendir(folderPath);
-    
-    if (dir == NULL)
-        printf("Cannot open directory '%s'\n", folderPath);
-    printf("PATH: %s", folderPath);
-    while((entry = readdir(dir)) != NULL){
-        if(p)
-            printf("[%s]\n", entry->d_name);
-        
-    }
+    char newName[255];
+    puts("Upisi novo ime fajlova:");
+    gets(newName);
+    renameFiles(dir, newName, extension);
     closedir(dir);
-}
-void folderSort(char folderPath, char cext, char *p, DIR *dir, struct dirent *entry){
-    dir = opendir(folderPath);
-    if (dir == NULL)
-        printf("Cannot open directory '%s'\n", folderPath);
-    printf("PATH: %s", folderPath);
-    printf("Enter new names for files");
-    printf("\n");
-    printf("~~:> ");
-}
-
-int main(int argc, char *argv[]){
-    //varijable koje su skupljene su iskoriscene
-    DIR* dir;
-    struct dirent *entry;
-    char folderPath[50]; // path of choosed folder with 
-    int i;
-    FILE *fptr;
-    char *filename = "RenFil.txt";
-    char extype[][10] = {".txt", ".jpg"};  // extension types
-    char cext[10]; // choosed extension
-    int  cNumEx;  // choosed number extension
-    int cNumOp; // choosed number option
-    char *p; 
-    p = strstr(entry->d_name, cext);
-    char fnn[50]; // new sorting name of the file
-    
-    menu(fptr,cNumOp,filename);
-    
-    //3. promena imena fajla sa izabranom ekstenzijom i sortiranje fajlova   
     return 0;
 }
